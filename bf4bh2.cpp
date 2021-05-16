@@ -12,7 +12,7 @@ BF4BH2::BF4BH2(QWidget *parent)
 {
   ui->setupUi(this);
   imodel = new QStandardItemModel;
-  initMenu();
+//  initMenu();
   manager = new QNetworkAccessManager(this);
   manager2 = new QNetworkAccessManager(this);
 }
@@ -33,6 +33,12 @@ int BF4BH2::initMenu()
   imodel->setHorizontalHeaderLabels(column);// задаем верхнюю легенду
   ui->uitvMain->setModel(imodel);
   ui->uitvMain->horizontalHeader()->setSectionResizeMode( 0, QHeaderView::Stretch );
+  ui->uitvMain->sortByColumn( 3, Qt::DescendingOrder);
+  ui->uitvMain->resizeColumnsToContents();
+  ui->uitvMain->resizeRowsToContents();
+  ui->uitvMain->setSortingEnabled(true);
+  ui->uitvMain->setSelectionMode(QAbstractItemView::SingleSelection);
+  ui->uitvMain->setSelectionBehavior(QAbstractItemView::SelectRows);
   return 1;
 }
 
@@ -49,6 +55,7 @@ int BF4BH2::getData(QString URL)
 
 int BF4BH2::getPlayers()
 {
+  ui->uitvMain->setSortingEnabled(false);
   for (int i=0; i<servers.size(); i++)
   {
     QNetworkReply* reply2 = manager2->get(QNetworkRequest(QUrl(servers[i])));
@@ -58,19 +65,21 @@ int BF4BH2::getPlayers()
     QString content = reply2->readAll();
     int t1 = content.indexOf("serverbrowserwarsaw.show.surface", content.indexOf("Surface.globalContext")) + 45;
     content = content.mid(t1, content.indexOf("block_serverbrowserwarsaw_warsawshow", t1) - t1 - 2);
-//    QFile file("myfile.txt");
-//    file.open(QIODevice::WriteOnly | QIODevice::Text);
-//    file.write(content.toUtf8());
+    //    QFile file("myfile.txt");
+    //    file.open(QIODevice::WriteOnly | QIODevice::Text);
+    //    file.write(content.toUtf8());
     QJsonDocument jsonDocument(QJsonDocument::fromJson(content.toUtf8()));
     QJsonObject jsObj = jsonDocument.object();
-    players = jsObj["players"].toArray().size();
+    player = jsObj["players"].toArray().size();
+    if(player < 10) players = "0" + QString::number(player);
+    else players = QString::number(player);
     QJsonObject jsServer = jsObj["server"].toObject();
     QJsonObject jsSlots = jsServer["slots"].toObject().value("2").toObject();
     imodel->insertRow(i);
     imodel->setItem(i, 0, new  QStandardItem(jsServer["name"].toString().simplified()));
     imodel->setItem(i, 1, new  QStandardItem(dictionary(jsServer["map"].toString())));
     imodel->setItem(i, 2, new  QStandardItem(dictionary2(dictionary2(QString::number(jsServer["preset"].toInt())))));
-    imodel->setItem(i, 3, new  QStandardItem(QString::number(players) + "/" + QString::number(jsSlots["max"].toInt())));
+    imodel->setItem(i, 3, new  QStandardItem(players + "/" + QString::number(jsSlots["max"].toInt())));
   }
   initMenu();
   return 1;
@@ -101,12 +110,6 @@ void BF4BH2::replyFinished()
     foreach (const QJsonValue & value, jsonDocument.object()["servers"].toArray()) {
       QJsonObject obj = value.toObject();
       servers << URL_server + obj["guid"].toString();
-
-//      imodel->insertRow(i);
-//      imodel->setItem(i, 0, new  QStandardItem(obj["name"].toString().simplified()));
-//      imodel->setItem(i, 1, new  QStandardItem(dictionary(obj["map"].toString())));
-//      imodel->setItem(i, 2, new  QStandardItem(dictionary2(dictionary2(QString::number(obj["preset"].toInt())))));
-//      imodel->setItem(i, 3, new  QStandardItem(obj["slots"].toString()));
       i++;
     }
   }
@@ -250,7 +253,7 @@ void BF4BH2::on_uiaAbout_triggered()
                      "О программе",
                      "Версия: " + tr(VER) + "\n\n"
                                             "Собрано на коленке.\n\n"
-                                            "Контактный e-mail: undeadmorose@gmail.com\n\n"
+                                            "Контакт: https://github.com/UndeadMorose/BF4BH2/\n\n"
                                             "Программа предоставляется \"КАК ЕСТЬ\" БЕЗ ГАРАНТИИ ЛЮБОГО ВИДА, ВКЛЮЧАЯ ГАРАНТИИ КОНСТРУКЦИИ, ТОВАРНОГО РАЗВИТИЯ И ПРИГОДНОСТИ ДЛЯ ОСОБЫХ ЦЕЛЕЙ.\n\n"
                                             "The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.");
 }
@@ -343,5 +346,5 @@ void BF4BH2::on_uiaRealNight_triggered()
 
 void BF4BH2::on_uiaQuit_triggered()
 {
-    close();
+  close();
 }
