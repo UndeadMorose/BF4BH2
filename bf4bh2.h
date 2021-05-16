@@ -26,7 +26,7 @@ class BF4BH2 : public QMainWindow
 
   private slots:
     void replyFinished();
-    void reply2Finished();
+//    void reply2Finished(int);
     int getPlayers();
 
     void on_uibReal_clicked();
@@ -45,7 +45,7 @@ class BF4BH2 : public QMainWindow
     void on_uiaQuit_triggered();
 
   signals:
-    void reply2fin();
+//    void reply2fin();
     void replyfin();
 
   private:
