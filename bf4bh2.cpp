@@ -3,7 +3,7 @@
 #include <QTextCodec>
 #include <QUrl>
 #include <QDebug>
-#include <QFile>
+#include <QProgressBar>
 #include <QJsonDocument>
 
 BF4BH2::BF4BH2(QWidget *parent)
@@ -12,9 +12,10 @@ BF4BH2::BF4BH2(QWidget *parent)
 {
   ui->setupUi(this);
   imodel = new QStandardItemModel;
-//  initMenu();
   manager = new QNetworkAccessManager(this);
   manager2 = new QNetworkAccessManager(this);
+  connect(ui->uipb, &QProgressBar::valueChanged, this, &BF4BH2::pbHider);
+  ui->uipb->hide();
 }
 
 BF4BH2::~BF4BH2()
@@ -32,13 +33,13 @@ int BF4BH2::initMenu()
   imodel->setColumnCount(column.size());// Указываем число колонок, ток нафиг?
   imodel->setHorizontalHeaderLabels(column);// задаем верхнюю легенду
   ui->uitvMain->setModel(imodel);
-  ui->uitvMain->horizontalHeader()->setSectionResizeMode( 0, QHeaderView::Stretch );
+  ui->uitvMain->horizontalHeader()->setSectionResizeMode( 0, QHeaderView::Stretch);
   ui->uitvMain->sortByColumn( 3, Qt::DescendingOrder);
   ui->uitvMain->resizeColumnsToContents();
   ui->uitvMain->resizeRowsToContents();
   ui->uitvMain->setSortingEnabled(true);
-  ui->uitvMain->setSelectionMode(QAbstractItemView::SingleSelection);
-  ui->uitvMain->setSelectionBehavior(QAbstractItemView::SelectRows);
+//  ui->uitvMain->setSelectionMode(QAbstractItemView::SingleSelection);
+  ui->uitvMain->setSelectionBehavior( QAbstractItemView::SelectRows);
   return 1;
 }
 
@@ -55,6 +56,7 @@ int BF4BH2::getData(QString URL)
 
 int BF4BH2::getPlayers()
 {
+  ui->uipb->show();
   ui->uitvMain->setSortingEnabled(false);
   for (int i=0; i<servers.size(); i++)
   {
@@ -80,6 +82,7 @@ int BF4BH2::getPlayers()
     imodel->setItem(i, 1, new  QStandardItem(dictionary(jsServer["map"].toString())));
     imodel->setItem(i, 2, new  QStandardItem(dictionary2(dictionary2(QString::number(jsServer["preset"].toInt())))));
     imodel->setItem(i, 3, new  QStandardItem(players + "/" + QString::number(jsSlots["max"].toInt())));
+    ui->uipb->setValue(i+1);
   }
   initMenu();
   return 1;
@@ -95,7 +98,7 @@ bool BF4BH2::ErrTyper(int error)
   }
 }
 
-void BF4BH2::replyFinished()
+int BF4BH2::replyFinished()
 {
   int i=0;
   servers.clear();
@@ -110,17 +113,20 @@ void BF4BH2::replyFinished()
     foreach (const QJsonValue & value, jsonDocument.object()["servers"].toArray()) {
       QJsonObject obj = value.toObject();
       servers << URL_server + obj["guid"].toString();
-      i++;
+      i = 1;
     }
+    ui->uipb->setRange(0, servers.size());
   }
   else
   {
     // Выводим описание ошибки, если она возникает.
     statusBar()->showMessage(reply->errorString());
+    i = 0;
   }
   // разрешаем объекту-ответа "удалится"
   reply->deleteLater();
   emit replyfin();
+  return i;
 }
 
 //======================================
@@ -253,7 +259,7 @@ void BF4BH2::on_uiaAbout_triggered()
                      "О программе",
                      "Версия: " + tr(VER) + "\n\n"
                                             "Собрано на коленке.\n\n"
-                                            "Контакт: https://github.com/UndeadMorose/BF4BH2/\n\n"
+                                            "GitHub: https://github.com/UndeadMorose/BF4BH2/\n\n"
                                             "Программа предоставляется \"КАК ЕСТЬ\" БЕЗ ГАРАНТИИ ЛЮБОГО ВИДА, ВКЛЮЧАЯ ГАРАНТИИ КОНСТРУКЦИИ, ТОВАРНОГО РАЗВИТИЯ И ПРИГОДНОСТИ ДЛЯ ОСОБЫХ ЦЕЛЕЙ.\n\n"
                                             "The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.");
 }
@@ -347,4 +353,9 @@ void BF4BH2::on_uiaRealNight_triggered()
 void BF4BH2::on_uiaQuit_triggered()
 {
   close();
+}
+
+void BF4BH2::pbHider()
+{
+  if(ui->uipb->value() == ui->uipb->maximum()) ui->uipb->hide();
 }

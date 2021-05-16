@@ -25,8 +25,9 @@ class BF4BH2 : public QMainWindow
     ~BF4BH2();
 
   private slots:
-    void replyFinished();
+    int replyFinished();
     int getPlayers();
+    void pbHider();
 
     void on_uibReal_clicked();
     void on_uibNormal_clicked();

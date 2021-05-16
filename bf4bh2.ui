@@ -19,6 +19,19 @@
      <widget class="QTableView" name="uitvMain"/>
     </item>
     <item>
+     <widget class="QProgressBar" name="uipb">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="value">
+       <number>0</number>
+      </property>
+      <property name="textVisible">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
+    <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
       <item>
        <spacer name="horizontalSpacer_2">
