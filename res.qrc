@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/res">
+        <file alias="logo">res/bf4bh.ico</file>
+    </qresource>
+</RCC>

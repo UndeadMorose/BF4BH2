@@ -16,7 +16,8 @@ SOURCES += \
 
 HEADERS += \
     bf4bh2.h \
-    defines.h
+    defines.h \
+    res.rc
 
 FORMS += \
     bf4bh2.ui
@@ -24,7 +25,29 @@ FORMS += \
 TRANSLATIONS += \
     BF4BH2_ru_RU.ts
 
-# Default rules for deployment.
-qnx: target.path = /tmp/$${TARGET}/bin
-else: unix:!android: target.path = /opt/$${TARGET}/bin
-!isEmpty(target.path): INSTALLS += target
+DISTFILES +=
+
+RESOURCES += \
+  res.qrc
+
+RC_FILE =   res.rc
+
+# разделяем по директориям все выходные файлы проекта
+unix:OBJECTS_DIR = build/o/unix
+win32:OBJECTS_DIR = build/o/win32
+macx:OBJECTS_DIR = build/o/mac
+MOC_DIR = build/moc
+RCC_DIR = build/rcc
+UI_DIR = build/ui
+
+CONFIG(debug, debug|release) {
+    DESTDIR = $$OUT_PWD/Debug
+} else {
+    DESTDIR = $$OUT_PWD/Release
+}
+
+CONFIG(debug, debug|release) {
+    QMAKE_POST_LINK = $$(QTDIR)/bin/windeployqt $$OUT_PWD/Debug
+} else {
+    QMAKE_POST_LINK = $$(QTDIR)/bin/windeployqt $$OUT_PWD/Release
+}
