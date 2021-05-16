@@ -59,7 +59,7 @@ int BF4BH2::getPlayers()
     QNetworkReply* reply2 = manager2->get(request);
     players = i;
     connect(reply2, SIGNAL(finished()), this, SLOT(reply2Finished()));
-    reply2Finished();
+//    reply2Finished();
     return 1;
   }
   return 0;
@@ -77,7 +77,7 @@ bool BF4BH2::ErrTyper(int error)
 
 void BF4BH2::replyFinished()
 {
-  //      int i=0;
+  int i=0;
   servers.clear();
   ui->uitwMain->clear();
   QNetworkReply *reply=qobject_cast<QNetworkReply *>(sender());
@@ -92,13 +92,14 @@ void BF4BH2::replyFinished()
     foreach (const QJsonValue & value, jsonDocument.object()["servers"].toArray()) {
       QJsonObject obj = value.toObject();
       servers << URL_server + obj["guid"].toString();
-      //      ui->uitwMain->insertRow(i);
-      //      ui->uitwMain->setItem(i,0,new  QTableWidgetItem(obj["name"].toString().simplified()));
-      //      ui->uitwMain->setItem(i,1,new  QTableWidgetItem(dictionary(obj["map"].toString())));
-      //      ui->uitwMain->setItem(i,2,new  QTableWidgetItem(dictionary2(dictionary2(QString::number(obj["preset"].toInt())))));
-      //      ui->uitwMain->setItem(i,3,new  QTableWidgetItem(QString::number(players)));
-      //      i++;
+//      ui->uitwMain->insertRow(i);
+//      ui->uitwMain->setItem(i,0,new  QTableWidgetItem(obj["name"].toString().simplified()));
+//      ui->uitwMain->setItem(i,1,new  QTableWidgetItem(dictionary(obj["map"].toString())));
+//      ui->uitwMain->setItem(i,2,new  QTableWidgetItem(dictionary2(dictionary2(QString::number(obj["preset"].toInt())))));
+//      //ui->uitwMain->setItem(i,3,new  QTableWidgetItem(QString::number(players)));
+      i++;
     }
+    emit replyfin();
   }
   else
   {
@@ -107,6 +108,7 @@ void BF4BH2::replyFinished()
   }
   // разрешаем объекту-ответа "удалится"
   reply->deleteLater();
+  getPlayers();
 }
 
 void BF4BH2::reply2Finished()
@@ -117,25 +119,25 @@ void BF4BH2::reply2Finished()
   {
     // Получаем содержимое ответа
     QString content = reply2->readAll();
-    players = content.count();
 //    QString content2 = content;
-//    int t1 = content.indexOf("serverbrowserwarsaw.show.surface", content.indexOf("Surface.globalContext")) + 46;
-//    content = "{" + content.mid(t1, content.indexOf("}]", t1) - t1 + 2) + "}";
-//    QJsonDocument jsonDocument(QJsonDocument::fromJson(content.toUtf8()));
-//    QJsonObject test = jsonDocument.object();
-//    QJsonArray test2 = test["players"].toArray();
-//    players = test2.size();
-    QJsonObject obj = value.toObject();
+    int t1 = content.indexOf("serverbrowserwarsaw.show.surface", content.indexOf("Surface.globalContext")) + 46;
+    content = "{" + content.mid(t1, content.indexOf("}]", t1) - t1 + 2) + "}";
+    QJsonDocument jsonDocument(QJsonDocument::fromJson(content.toUtf8()));
+    QJsonObject test = jsonDocument.object();
+    QJsonArray test2 = test["players"].toArray();
+    players = test2.size();
+//    QJsonObject obj = value.toObject();
     ui->uitwMain->insertRow(i);
-    ui->uitwMain->setItem(i,0,new  QTableWidgetItem(obj["name"].toString().simplified()));
-    ui->uitwMain->setItem(i,1,new  QTableWidgetItem(dictionary(obj["map"].toString())));
-    ui->uitwMain->setItem(i,2,new  QTableWidgetItem(dictionary2(dictionary2(QString::number(obj["preset"].toInt())))));
+    ui->uitwMain->setItem(i,0,new  QTableWidgetItem(test["serverName"].toString().simplified()));
+    ui->uitwMain->setItem(i,1,new  QTableWidgetItem(dictionary(test["levelName"].toString())));
+    ui->uitwMain->setItem(i,2,new  QTableWidgetItem(dictionary2(dictionary2(QString::number(test["preset"].toInt())))));
     ui->uitwMain->setItem(i,3,new  QTableWidgetItem(QString::number(players)));
     //    ui->uitwMain->setSortingEnabled(false);
     //    ui->uitwMain->sortByColumn(3, Qt::DescendingOrder);
     //    ui->uitwMain->resizeColumnsToContents();
     //    ui->uitwMain->resizeRowsToContents();
     //    ui->uitwMain->setSortingEnabled(true);
+    emit reply2fin();
   }
   else
   {
@@ -255,10 +257,7 @@ void BF4BH2::on_uibReal_clicked()
 void BF4BH2::on_uiaReal_triggered()
 {
   err = getData("https://battlelog.battlefield.com/bf4/ru/servers/pc/?filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&slots=16&slots=1&slots=2&slots=4&gameSize=32&gameSize=48&gameSize=64&q=&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gamepresets=2&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
-  if(err == 1)
-    getPlayers();
-  else
-    ErrTyper(err);
+  ErrTyper(err);
 }
 
 void BF4BH2::on_uibNormal_clicked()

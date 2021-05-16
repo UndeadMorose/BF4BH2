@@ -26,6 +26,7 @@ class BF4BH2 : public QMainWindow
   private slots:
     void replyFinished();
     void reply2Finished();
+
     void on_uibReal_clicked();
     void on_uibNormal_clicked();
 
@@ -40,6 +41,10 @@ class BF4BH2 : public QMainWindow
     void on_uiaAMRealNE_triggered();
     void on_uiaRealNight_triggered();
 
+  signals:
+    void reply2fin();
+    void replyfin();
+
   private:
     Ui::BF4BH2 *ui;
     int err = 0;
@@ -50,8 +55,6 @@ class BF4BH2 : public QMainWindow
     int getPlayers();
     QNetworkAccessManager* manager;
     QNetworkAccessManager* manager2;
-//    QNetworkReply* reply;
-//    QNetworkReply* reply2;
     QJsonArray presetArr;
     QJsonObject presetObj;
     QString URL_server = "https://battlelog.battlefield.com/bf4/ru/servers/show/pc/";

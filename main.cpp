@@ -1,6 +1,5 @@
 #include "bf4bh2.h"
 #include <QTextCodec>
-
 #include <QApplication>
 
 int main(int argc, char *argv[])
