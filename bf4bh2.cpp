@@ -11,6 +11,7 @@ BF4BH2::BF4BH2(QWidget *parent)
   , ui(new Ui::BF4BH2)
 {
   ui->setupUi(this);
+  imodel = new QStandardItemModel;
   initMenu();
   manager = new QNetworkAccessManager(this);
   manager2 = new QNetworkAccessManager(this);
@@ -21,32 +22,29 @@ BF4BH2::~BF4BH2()
   delete ui;
 }
 
-//=======================================
 int BF4BH2::initMenu()
 {
   QStringList column;
-  column  << tr("Имя")
-          << tr("Карта")
-          << tr("Режим")
-             //          << tr("Мод")
-          << tr("*/*")
-             //          << tr("?/?")
-             //          << tr("Боты")
-             //          << tr("ссылка")
-             ;
-  ui->uitwMain->setColumnCount(column.size());// Указываем число колонок, ток нафиг?
-  ui->uitwMain->setHorizontalHeaderLabels(column);// задаем верхнюю легенду
-  ui->uitwMain->horizontalHeader()->setStretchLastSection(true);
-  QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
+  column << tr("Имя")
+         << tr("Карта")
+         << tr("Режим")
+         << tr("*/*");
+  imodel->setColumnCount(column.size());// Указываем число колонок, ток нафиг?
+  imodel->setHorizontalHeaderLabels(column);// задаем верхнюю легенду
+  ui->uitvMain->setModel(imodel);
+  ui->uitvMain->horizontalHeader()->setSectionResizeMode( 0, QHeaderView::Stretch );
+//  QTextCodec::setCodecForLocale(QTextCodec::codecForName("UTF-8"));
   return 1;
 }
 
+//=======================================
 int BF4BH2::getData(QString URL)
 {
   QUrl url(URL);
   QNetworkRequest request(url);
   QNetworkReply* reply = manager->get(request);
-  connect(reply, SIGNAL(finished()), this, SLOT(replyFinished()));
+  connect(reply, &QNetworkReply::finished, this, &BF4BH2::replyFinished);
+  connect(this, &BF4BH2::replyfin, this, &BF4BH2::getPlayers);
   return 1;
 }
 
@@ -57,9 +55,25 @@ int BF4BH2::getPlayers()
     QUrl url(servers[i]);
     QNetworkRequest request(url);
     QNetworkReply* reply2 = manager2->get(request);
-    players = i;
-    connect(reply2, SIGNAL(finished()), this, SLOT(reply2Finished()));
-//    reply2Finished();
+//    players = i;
+////    connect(reply2, &QNetworkReply::finished, this, [=]{ reply2Finished(i);});
+//    connect(reply2, &QNetworkReply::finished, this, &BF4BH2::reply2Finished);
+    QEventLoop event;
+    connect(reply2, &QNetworkReply::finished, &event, &QEventLoop::quit);
+    event.exec();
+    QString content = reply2->readAll();
+//    QString content2 = content;
+    int t1 = content.indexOf("serverbrowserwarsaw.show.surface", content.indexOf("Surface.globalContext")) + 46;
+    content = "{" + content.mid(t1, content.indexOf("}]", t1) - t1 + 2) + "}";
+    QJsonDocument jsonDocument(QJsonDocument::fromJson(content.toUtf8()));
+    QJsonObject test = jsonDocument.object();
+    QJsonArray test2 = test["players"].toArray();
+    players = test2.size();
+////    QJsonObject obj = value.toObject();
+//    imodel->insertRow(i);
+////    imodel->setItem(i,0,new  QTableWidgetItem(test["serverName"].toString().simplified()));
+    imodel->setItem(i,3,new  QStandardItem(QString::number(players)));
+
     return 1;
   }
   return 0;
@@ -79,27 +93,23 @@ void BF4BH2::replyFinished()
 {
   int i=0;
   servers.clear();
-  ui->uitwMain->clear();
+  imodel->clear();
   QNetworkReply *reply=qobject_cast<QNetworkReply *>(sender());
   if (reply->error() == QNetworkReply::NoError)
   {
-    // Получаем содержимое ответа
     QString content= reply->readAll();
     int t1 = content.indexOf("true,\"servers\":[") + 5;
     content = "{" + content.mid(t1, content.indexOf(",\"session\"", t1) - t1) + "}";
     QJsonDocument jsonDocument(QJsonDocument::fromJson(content.toUtf8()));
-    // Выводим результат
     foreach (const QJsonValue & value, jsonDocument.object()["servers"].toArray()) {
       QJsonObject obj = value.toObject();
       servers << URL_server + obj["guid"].toString();
-//      ui->uitwMain->insertRow(i);
-//      ui->uitwMain->setItem(i,0,new  QTableWidgetItem(obj["name"].toString().simplified()));
-//      ui->uitwMain->setItem(i,1,new  QTableWidgetItem(dictionary(obj["map"].toString())));
-//      ui->uitwMain->setItem(i,2,new  QTableWidgetItem(dictionary2(dictionary2(QString::number(obj["preset"].toInt())))));
-//      //ui->uitwMain->setItem(i,3,new  QTableWidgetItem(QString::number(players)));
+      imodel->insertRow(i);
+      imodel->setItem(i,0,new  QStandardItem(obj["name"].toString().simplified()));
+      imodel->setItem(i,1,new  QStandardItem(dictionary(obj["map"].toString())));
+      imodel->setItem(i,2,new  QStandardItem(dictionary2(dictionary2(QString::number(obj["preset"].toInt())))));
       i++;
     }
-    emit replyfin();
   }
   else
   {
@@ -108,12 +118,12 @@ void BF4BH2::replyFinished()
   }
   // разрешаем объекту-ответа "удалится"
   reply->deleteLater();
-  getPlayers();
+  emit replyfin();
 }
 
-void BF4BH2::reply2Finished()
+void BF4BH2::reply2Finished()/*(int i)*/
 {
-  int i=players;
+  int i = players;
   QNetworkReply *reply2=qobject_cast<QNetworkReply *>(sender());
   if (reply2->error() == QNetworkReply::NoError)
   {
@@ -126,18 +136,10 @@ void BF4BH2::reply2Finished()
     QJsonObject test = jsonDocument.object();
     QJsonArray test2 = test["players"].toArray();
     players = test2.size();
-//    QJsonObject obj = value.toObject();
-    ui->uitwMain->insertRow(i);
-    ui->uitwMain->setItem(i,0,new  QTableWidgetItem(test["serverName"].toString().simplified()));
-    ui->uitwMain->setItem(i,1,new  QTableWidgetItem(dictionary(test["levelName"].toString())));
-    ui->uitwMain->setItem(i,2,new  QTableWidgetItem(dictionary2(dictionary2(QString::number(test["preset"].toInt())))));
-    ui->uitwMain->setItem(i,3,new  QTableWidgetItem(QString::number(players)));
-    //    ui->uitwMain->setSortingEnabled(false);
-    //    ui->uitwMain->sortByColumn(3, Qt::DescendingOrder);
-    //    ui->uitwMain->resizeColumnsToContents();
-    //    ui->uitwMain->resizeRowsToContents();
-    //    ui->uitwMain->setSortingEnabled(true);
-    emit reply2fin();
+////    QJsonObject obj = value.toObject();
+//    imodel->insertRow(i);
+////    imodel->setItem(i,0,new  QTableWidgetItem(test["serverName"].toString().simplified()));
+    imodel->setItem(i,3,new  QStandardItem(QString::number(players)));
   }
   else
   {
@@ -146,6 +148,7 @@ void BF4BH2::reply2Finished()
   }
   // разрешаем объекту-ответа "удалится"
   reply2->deleteLater();
+//  emit reply2fin();
 }
 //======================================
 QString BF4BH2::dictionary(QString tech_word)
@@ -197,33 +200,33 @@ QString BF4BH2::dictionary(QString tech_word)
     case (4):	tech_word = "Зона Затопления";      break;
     case (5):	tech_word = "Кровавая Заря";        break;
     case (6):	tech_word = "Курорт Хайнань";       break;
-    case (7):	tech_word = "Операция \"Бунт\"";	break;
+    case (7):	tech_word = "Операция \"Бунт\"";    break;
     case (8):	tech_word = "Операция \"Взаперти\"";break;
     case (9):	tech_word = "Осада Шанхая";         break;
     case (10):	tech_word = "Плотина На Меконге";	break;
-    case (11):	tech_word = "Чужой Сигнал";         break;
+    case (11):	tech_word = "Чужой Сигнал";       break;
     case (12):	tech_word = "Шторм На Параселах";	break;
-    case (13):	tech_word = "Алтайский Хребет";     break;
-    case (14):	tech_word = "Гуйлиньский пики";     break;
-    case (15):	tech_word = "Перевал Дракона";      break;
-    case (16):	tech_word = "Шелковый путь";        break;
-    case (17):	tech_word = "Граница Каспии";       break;
-    case (18):	tech_word = "Оманский залив";       break;
+    case (13):	tech_word = "Алтайский Хребет";   break;
+    case (14):	tech_word = "Гуйлиньский пики";   break;
+    case (15):	tech_word = "Перевал Дракона";    break;
+    case (16):	tech_word = "Шелковый путь";      break;
+    case (17):	tech_word = "Граница Каспии";     break;
+    case (18):	tech_word = "Оманский залив";     break;
     case (19):	tech_word = "Операция \"Огненый шторм\"";	break;
-    case (20):	tech_word = "Операция \"Метро\"";	break;
-    case (21):	tech_word = "Волнорез";             break;
-    case (22):	tech_word = "Затерянные острова";	break;
-    case (23):	tech_word = "Операция \"Мортира\"";	break;
-    case (24):	tech_word = "Удар по Спратли";      break;
-    case (25):	tech_word = "Жемчужный рынок";      break;
-    case (26):	tech_word = "Затонувций \"дракон\"";break;
-    case (27):	tech_word = "Пропоганда";           break;
-    case (28):	tech_word = "Сад Лумфини";          break;
-    case (29):	tech_word = "Ангар 21";             break;
-    case (30):	tech_word = "Карельские гиганты";	break;
-    case (31):	tech_word = "Молот";                break;
+    case (20):	tech_word = "Операция \"Метро\"";       break;
+    case (21):	tech_word = "Волнорез";                 break;
+    case (22):	tech_word = "Затерянные острова";       break;
+    case (23):	tech_word = "Операция \"Мортира\"";     break;
+    case (24):	tech_word = "Удар по Спратли";          break;
+    case (25):	tech_word = "Жемчужный рынок";          break;
+    case (26):	tech_word = "Затонувций \"дракон\"";    break;
+    case (27):	tech_word = "Пропоганда";               break;
+    case (28):	tech_word = "Сад Лумфини";              break;
+    case (29):	tech_word = "Ангар 21";                 break;
+    case (30):	tech_word = "Карельские гиганты";       break;
+    case (31):	tech_word = "Молот";                    break;
     case (32):	tech_word = "Операция \"Белая мгла\"";	break;
-    case (-1): break;
+    case (-1):  break;
   }
   return tech_word;
 }
@@ -366,4 +369,9 @@ void BF4BH2::on_uiaRealNight_triggered()
                 "&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99"
                 "&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
   ErrTyper(err);
+}
+
+void BF4BH2::on_uiaQuit_triggered()
+{
+    close();
 }

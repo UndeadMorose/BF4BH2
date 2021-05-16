@@ -10,6 +10,7 @@
 #include <QJsonObject>
 #include <QJsonArray>
 #include <QStringList>
+#include <QStandardItemModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class BF4BH2; }
@@ -26,6 +27,7 @@ class BF4BH2 : public QMainWindow
   private slots:
     void replyFinished();
     void reply2Finished();
+    int getPlayers();
 
     void on_uibReal_clicked();
     void on_uibNormal_clicked();
@@ -40,6 +42,7 @@ class BF4BH2 : public QMainWindow
     void on_uiaAMNormNE_triggered();
     void on_uiaAMRealNE_triggered();
     void on_uiaRealNight_triggered();
+    void on_uiaQuit_triggered();
 
   signals:
     void reply2fin();
@@ -52,7 +55,8 @@ class BF4BH2 : public QMainWindow
     int getData(QString);
     bool ErrTyper(int);
     int initMenu();
-    int getPlayers();
+
+    QStandardItemModel *imodel;
     QNetworkAccessManager* manager;
     QNetworkAccessManager* manager2;
     QJsonArray presetArr;
