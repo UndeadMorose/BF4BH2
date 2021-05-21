@@ -25,7 +25,7 @@ BF4BH2::~BF4BH2()
 
 int BF4BH2::initMenu()
 {
-//  imodel->clear();
+  //  imodel->clear();
   QStringList column;
   column << tr( "Имя")
          << tr( "Карта")
@@ -50,61 +50,13 @@ int BF4BH2::getData( QString URL)
   QUrl url( URL);
   QNetworkRequest request( url);
   QNetworkReply* reply = manager->get( request);
-  connect( reply, &QNetworkReply::finished, this, &BF4BH2::replyFinished);
-  connect( this, &BF4BH2::replyfin, this, &BF4BH2::getPlayers);
-  return 1;
-}
-
-int BF4BH2::getPlayers()
-{
-  ui->uipb->show();
-  ui->uitvMain->setSortingEnabled( false);
-  for ( int i=0; i<servers.size(); i++)
-  {
-    QNetworkReply* reply2 = manager2->get( QNetworkRequest( QUrl( servers[ i])));
-    QEventLoop event;
-    connect( reply2, &QNetworkReply::finished, &event, &QEventLoop::quit);
-    event.exec();
-    QString content = reply2->readAll();
-    int t1 = content.indexOf( "serverbrowserwarsaw.show.surface", content.indexOf( "Surface.globalContext")) + 45;
-    content = content.mid( t1, content.indexOf( "block_serverbrowserwarsaw_warsawshow", t1) - t1 - 2);
-    //    QFile file("myfile.txt");
-    //    file.open(QIODevice::WriteOnly | QIODevice::Text);
-    //    file.write(content.toUtf8());
-    QJsonDocument jsonDocument( QJsonDocument::fromJson( content.toUtf8()));
-    QJsonObject jsObj = jsonDocument.object();
-    player = jsObj[ "players"].toArray().size();
-    if( player < 10) players = "0" + QString::number( player);
-    else players = QString::number(player);
-    QJsonObject jsServer = jsObj[ "server"].toObject();
-    QJsonObject jsSlots = jsServer[ "slots"].toObject().value( "2").toObject();
-    imodel->insertRow(i);
-    imodel->setItem(i, 0, new  QStandardItem( jsServer[ "name"].toString().simplified()));
-    imodel->setItem(i, 1, new  QStandardItem( dictionary(jsServer[ "map"].toString())));
-    imodel->setItem(i, 2, new  QStandardItem( dictionary2( dictionary2( QString::number( jsServer[ "preset"].toInt())))));
-    imodel->setItem(i, 3, new  QStandardItem( players + "/" + QString::number( jsSlots[ "max"].toInt())));
-    ui->uipb->setValue( i+1);
-  }
-  initMenu();
-  return 1;
-}
-
-bool BF4BH2::ErrTyper( int error)
-{
-  switch ( error) {
-    case 1: return true;
-      break;
-    case 0:
-    default: return false;
-  }
-}
-
-int BF4BH2::replyFinished()
-{
+  QEventLoop event;
+  connect( reply, &QNetworkReply::finished, &event, &QEventLoop::quit);
+  connect( this, &BF4BH2::replyAbort, reply, &QNetworkReply::abort);
+  event.exec();
   int i=0;
   servers.clear();
   imodel->clear();
-  QNetworkReply *reply = qobject_cast< QNetworkReply *>( sender());
   if ( reply->error() == QNetworkReply::NoError)
   {
     QString content = reply->readAll();
@@ -125,8 +77,56 @@ int BF4BH2::replyFinished()
   }
   // разрешаем объекту-ответа "удалится"
   reply->deleteLater();
-  emit replyfin();
+  if(i)    getPlayers();
   return i;
+}
+
+int BF4BH2::getPlayers()
+{
+  ui->uipb->show();
+  ui->uitvMain->setSortingEnabled( false);
+  for ( int i=0; i<servers.size(); i++)
+  {
+    QNetworkReply* reply2 = manager2->get( QNetworkRequest( QUrl( servers[ i])));
+    QEventLoop event;
+    connect( reply2, &QNetworkReply::finished, &event, &QEventLoop::quit);
+    connect( this, &BF4BH2::replyAbort, reply2, &QNetworkReply::abort);
+    event.exec();
+    if ( reply2->error() == QNetworkReply::NoError)
+    {
+      QString content = reply2->readAll();
+      int t1 = content.indexOf( "serverbrowserwarsaw.show.surface", content.indexOf( "Surface.globalContext")) + 45;
+      content = content.mid( t1, content.indexOf( "block_serverbrowserwarsaw_warsawshow", t1) - t1 - 2);
+      QJsonDocument jsonDocument( QJsonDocument::fromJson( content.toUtf8()));
+      QJsonObject jsObj = jsonDocument.object();
+      player = jsObj[ "players"].toArray().size();
+      if( player < 10) players = "0" + QString::number( player);
+      else players = QString::number(player);
+      QJsonObject jsServer = jsObj[ "server"].toObject();
+      QJsonObject jsSlots = jsServer[ "slots"].toObject().value( "2").toObject();
+      imodel->insertRow(i);
+      imodel->setItem( i, 0, new  QStandardItem( jsServer[ "name"].toString().simplified()));
+      imodel->setItem( i, 1, new  QStandardItem( dictionary(jsServer[ "map"].toString())));
+      imodel->setItem( i, 2, new  QStandardItem( dictionary2( dictionary2( QString::number( jsServer[ "preset"].toInt())))));
+      imodel->setItem( i, 3, new  QStandardItem( players + "/" + QString::number( jsSlots[ "max"].toInt())));
+      ui->uipb->setValue( i+1);
+    }
+    else
+      return 0;
+    reply2->deleteLater();
+  }
+  initMenu();
+  return 1;
+}
+
+bool BF4BH2::ErrTyper( int error)
+{
+  switch ( error) {
+    case 1: return true;
+      break;
+    case 0:
+    default: return false;
+  }
 }
 
 //======================================
@@ -243,12 +243,14 @@ void BF4BH2::on_uibNormal_clicked()
 
 void BF4BH2::on_uiaReal_triggered()
 {
+  emit replyAbort();
   err = getData( "https://battlelog.battlefield.com/bf4/ru/servers/pc/?filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&slots=16&slots=1&slots=2&slots=4&gameSize=32&gameSize=48&gameSize=64&q=&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gamepresets=2&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
   ErrTyper( err);
 }
 
 void BF4BH2::on_uiaNormal_triggered()
 {
+  emit replyAbort();
   err = getData( "https://battlelog.battlefield.com/bf4/ru/servers/pc/?filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&slots=16&slots=1&slots=2&slots=4&gameSize=32&gameSize=48&gameSize=64&q=&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gamepresets=1&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
   ErrTyper( err);
 }
@@ -266,6 +268,7 @@ void BF4BH2::on_uiaAbout_triggered()
 
 void BF4BH2::on_uiaAll_triggered()
 {
+  emit replyAbort();
   err = getData( "https://battlelog.battlefield.com/bf4/ru/servers/pc/?"
                 "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&q="
                 "&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1"
@@ -276,6 +279,7 @@ void BF4BH2::on_uiaAll_triggered()
 
 void BF4BH2::on_uiaRealNE_triggered()
 {
+  emit replyAbort();
   err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
                 "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort"
                 "&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01&gamemodes=1&gamemodes=64&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&"
@@ -289,6 +293,7 @@ void BF4BH2::on_uiaRealNE_triggered()
 
 void BF4BH2::on_uiaNormNE_triggered()
 {
+  emit replyAbort();
   err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
                 "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish"
                 "&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01&gamemodes=1&gamemodes=64&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&"
@@ -302,6 +307,7 @@ void BF4BH2::on_uiaNormNE_triggered()
 
 void BF4BH2::on_uiaAllNE_triggered()
 {
+  emit replyAbort();
   err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
                 "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish"
                 "&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01&gamemodes=1&gamemodes=64&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&"
@@ -315,6 +321,7 @@ void BF4BH2::on_uiaAllNE_triggered()
 
 void BF4BH2::on_uiaAMNormNE_triggered()
 {
+  emit replyAbort();
   err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
                 "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1"
                 "&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01"
@@ -328,6 +335,7 @@ void BF4BH2::on_uiaAMNormNE_triggered()
 
 void BF4BH2::on_uiaAMRealNE_triggered()
 {
+  emit replyAbort();
   err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
                 "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1"
                 "&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01"
@@ -342,6 +350,7 @@ void BF4BH2::on_uiaAMRealNE_triggered()
 
 void BF4BH2::on_uiaRealNight_triggered()
 {
+  emit replyAbort();
   err = getData("https://battlelog.battlefield.com/bf4/ru/servers/pc/?"
                 "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&gamemodes=1&gamemodes=64&q=&gameexpansions=-1&gameexpansions=-1"
                 "&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gamepresets=2&mapRotation=-1&modeRotation=-1&password=-1&osls=-1&vvsa=-1&vffi=-1"
@@ -352,10 +361,13 @@ void BF4BH2::on_uiaRealNight_triggered()
 
 void BF4BH2::on_uiaQuit_triggered()
 {
+  emit replyAbort();
   close();
 }
 
 void BF4BH2::pbHider()
 {
-  if( ui->uipb->value() == ui->uipb->maximum()) ui->uipb->hide();
+  emit replyAbort();
+  if( ui->uipb->value() == ui->uipb->maximum())
+    ui->uipb->hide();
 }
