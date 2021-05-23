@@ -26,7 +26,8 @@ FORMS += \
 TRANSLATIONS += \
     BF4BH2_ru_RU.ts
 
-DISTFILES +=
+DISTFILES += \
+  presets.json
 
 RESOURCES += \
   res.qrc

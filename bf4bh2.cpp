@@ -129,6 +129,33 @@ bool BF4BH2::ErrTyper( int error)
   }
 }
 
+void BF4BH2::setAction(QString name, QString value, int button)
+{
+  actionList[name] = value;
+  QAction *action   = new QAction(name, this);
+  action->setObjectName(name);
+  connect(action, &QAction::triggered, this, &BF4BH2::actTriggered);
+  ui->uimPreset->addAction(action);
+  if(button == 0)
+  {
+    connect(ui->uib0, &QPushButton::clicked, action, &QAction::triggered);
+    ui->uib0->setText(name);
+  }
+  else if(button == 1)
+  {
+    connect(ui->uib1, &QPushButton::clicked, action, &QAction::triggered);
+    ui->uib1->setText(name);
+  }
+}
+
+void BF4BH2::actTriggered()
+{
+  QAction* pAction = qobject_cast<QAction*>(sender());
+  Q_ASSERT(pAction);
+  emit replyAbort();
+  err = getData(actionList[pAction->text()]);
+  ErrTyper(err);
+}
 //======================================
 QString BF4BH2::dictionary( QString tech_word)
 {
@@ -231,30 +258,6 @@ QString BF4BH2::dictionary2( QString tech_word)
 }
 
 //======================================
-void BF4BH2::on_uibReal_clicked()
-{
-  BF4BH2::on_uiaRealNE_triggered();
-}
-
-void BF4BH2::on_uibNormal_clicked()
-{
-  BF4BH2::on_uiaNormNE_triggered();
-}
-
-void BF4BH2::on_uiaReal_triggered()
-{
-  emit replyAbort();
-  err = getData( "https://battlelog.battlefield.com/bf4/ru/servers/pc/?filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&slots=16&slots=1&slots=2&slots=4&gameSize=32&gameSize=48&gameSize=64&q=&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gamepresets=2&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
-  ErrTyper( err);
-}
-
-void BF4BH2::on_uiaNormal_triggered()
-{
-  emit replyAbort();
-  err = getData( "https://battlelog.battlefield.com/bf4/ru/servers/pc/?filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&slots=16&slots=1&slots=2&slots=4&gameSize=32&gameSize=48&gameSize=64&q=&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gamepresets=1&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
-  ErrTyper( err);
-}
-
 void BF4BH2::on_uiaAbout_triggered()
 {
   QMessageBox::about( this,
@@ -264,99 +267,6 @@ void BF4BH2::on_uiaAbout_triggered()
                                             "GitHub: https://github.com/UndeadMorose/BF4BH2/\n\n"
                                             "Программа предоставляется \"КАК ЕСТЬ\" БЕЗ ГАРАНТИИ ЛЮБОГО ВИДА, ВКЛЮЧАЯ ГАРАНТИИ КОНСТРУКЦИИ, ТОВАРНОГО РАЗВИТИЯ И ПРИГОДНОСТИ ДЛЯ ОСОБЫХ ЦЕЛЕЙ.\n\n"
                                             "The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.");
-}
-
-void BF4BH2::on_uiaAll_triggered()
-{
-  emit replyAbort();
-  err = getData( "https://battlelog.battlefield.com/bf4/ru/servers/pc/?"
-                "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&q="
-                "&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1"
-                "&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1"
-                "&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
-  ErrTyper(err);
-}
-
-void BF4BH2::on_uiaRealNE_triggered()
-{
-  emit replyAbort();
-  err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
-                "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort"
-                "&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01&gamemodes=1&gamemodes=64&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&"
-                "q=&maps=XP1_002&maps=XP1_004&maps=XP1_003&maps=XP1_001&maps=XP0_Caspian&maps=XP0_Oman&maps=XP0_Firestorm&maps=XP0_Metro&maps=XP2_001&maps=XP2_002&maps=XP2_004&maps=XP2_003"
-                "&maps=XP3_UrbanGdn&maps=XP3_MarketPl&maps=XP3_Prpganda&maps=XP3_WtrFront&maps=XP4_WlkrFtry&maps=XP4_SubBase&maps=XP4_Titan&maps=XP4_Arctic&gamepresets=2&mapRotation=-1&modeRotation=-1"
-                "&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1"
-                "&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500&includeExpansions=0&includeExpansions=1048576"
-                "&includeExpansions=524288&includeExpansions=2097152&includeExpansions=4194304&includeExpansions=8388608");
-  ErrTyper(err);
-}
-
-void BF4BH2::on_uiaNormNE_triggered()
-{
-  emit replyAbort();
-  err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
-                "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish"
-                "&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01&gamemodes=1&gamemodes=64&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&"
-                "q=&maps=XP1_002&maps=XP1_004&maps=XP1_003&maps=XP1_001&maps=XP0_Caspian&maps=XP0_Oman&maps=XP0_Firestorm&maps=XP0_Metro&maps=XP2_001&maps=XP2_002"
-                "&maps=XP2_004&maps=XP2_003&maps=XP3_UrbanGdn&maps=XP3_MarketPl&maps=XP3_Prpganda&maps=XP3_WtrFront&maps=XP4_WlkrFtry&maps=XP4_SubBase"
-                "&maps=XP4_Titan&maps=XP4_Arctic&gamepresets=1&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1"
-                "&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500"
-                "&vgmc-min=0&vgmc-max=500&includeExpansions=0&includeExpansions=1048576&includeExpansions=524288&includeExpansions=2097152&includeExpansions=4194304&includeExpansions=8388608");
-  ErrTyper(err);
-}
-
-void BF4BH2::on_uiaAllNE_triggered()
-{
-  emit replyAbort();
-  err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
-                "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish"
-                "&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01&gamemodes=1&gamemodes=64&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&"
-                "q=&maps=XP1_002&maps=XP1_004&maps=XP1_003&maps=XP1_001&maps=XP0_Caspian&maps=XP0_Oman&maps=XP0_Firestorm&maps=XP0_Metro&maps=XP2_001&maps=XP2_002&maps=XP2_004&maps=XP2_003"
-                "&maps=XP3_UrbanGdn&maps=XP3_MarketPl&maps=XP3_Prpganda&maps=XP3_WtrFront&maps=XP4_WlkrFtry&maps=XP4_SubBase&maps=XP4_Titan&maps=XP4_Arctic&mapRotation=-1&modeRotation=-1&password=-1"
-                "&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300"
-                "&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500&includeExpansions=0&includeExpansions=1048576"
-                "&includeExpansions=524288&includeExpansions=2097152&includeExpansions=4194304&includeExpansions=8388608");
-  ErrTyper(err);
-}
-
-void BF4BH2::on_uiaAMNormNE_triggered()
-{
-  emit replyAbort();
-  err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
-                "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1"
-                "&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01"
-                "&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&q=&maps=XP1_002&maps=XP1_004&maps=XP1_003&maps=XP1_001&maps=XP0_Caspian&maps=XP0_Oman&maps=XP0_Firestorm&maps=XP0_Metro"
-                "&maps=XP2_001&maps=XP2_002&maps=XP2_004&maps=XP2_003&maps=XP3_UrbanGdn&maps=XP3_MarketPl&maps=XP3_Prpganda&maps=XP3_WtrFront&maps=XP4_WlkrFtry&maps=XP4_SubBase&maps=XP4_Titan"
-                "&maps=XP4_Arctic&gamepresets=1&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1"
-                "&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500"
-                "&vgmc-min=0&vgmc-max=500&includeExpansions=0&includeExpansions=1048576&includeExpansions=524288&includeExpansions=2097152&includeExpansions=4194304&includeExpansions=8388608");
-  ErrTyper(err);
-}
-
-void BF4BH2::on_uiaAMRealNE_triggered()
-{
-  emit replyAbort();
-  err = getData("https://battlelog.battlefield.com/bf4/servers/pc/?"
-                "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1"
-                "&maps=MP_Tremors&maps=XP7_Valley&maps=MP_Flooded&maps=MP_Journey&maps=MP_Resort&maps=MP_Damage&maps=MP_Naval&maps=MP_TheDish&maps=MP_Siege&maps=MP_Abandoned&maps=XP5_Night_01"
-                "&slots=16&slots=1&slots=2&gameSize=32&gameSize=48&gameSize=64&q=&maps=XP1_002&maps=XP1_004&maps=XP1_003&maps=XP1_001&maps=XP0_Caspian&maps=XP0_Oman&maps=XP0_Firestorm"
-                "&maps=XP0_Metro&maps=XP2_001&maps=XP2_002&maps=XP2_004&maps=XP2_003&maps=XP3_UrbanGdn&maps=XP3_MarketPl&maps=XP3_Prpganda&maps=XP3_WtrFront&maps=XP4_WlkrFtry&maps=XP4_SubBase"
-                "&maps=XP4_Titan&maps=XP4_Arctic&gamepresets=2&mapRotation=-1&modeRotation=-1&password=-1&regions=16&osls=-1&vvsa=-1&vffi=-1&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1"
-                "&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99"
-                "&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500&includeExpansions=0&includeExpansions=1048576&includeExpansions=524288&includeExpansions=2097152&includeExpansions=4194304"
-                "&includeExpansions=8388608");
-  ErrTyper(err);
-}
-
-void BF4BH2::on_uiaRealNight_triggered()
-{
-  emit replyAbort();
-  err = getData("https://battlelog.battlefield.com/bf4/ru/servers/pc/?"
-                "filtered=1&expand=1&settings=&useLocation=1&useAdvanced=1&gameexpansions=-1&gamemodes=1&gamemodes=64&q=&gameexpansions=-1&gameexpansions=-1"
-                "&gameexpansions=-1&gameexpansions=-1&gameexpansions=-1&gamepresets=2&mapRotation=-1&modeRotation=-1&password=-1&osls=-1&vvsa=-1&vffi=-1"
-                "&vaba=-1&vkca=-1&v3ca=-1&v3sp=-1&vmsp=-1&vrhe=-1&vhud=-1&vmin=-1&vnta=-1&vbdm-min=1&vbdm-max=300&vprt-min=1&vprt-max=300&vshe-min=1&vshe-max=300&vtkk-min=1&vtkk-max=99"
-                "&vnit-min=30&vnit-max=86400&vtkc-min=1&vtkc-max=99&vvsd-min=0&vvsd-max=500&vgmc-min=0&vgmc-max=500");
-  ErrTyper(err);
 }
 
 void BF4BH2::on_uiaQuit_triggered()
@@ -371,3 +281,9 @@ void BF4BH2::pbHider()
   if( ui->uipb->value() == ui->uipb->maximum())
     ui->uipb->hide();
 }
+
+void BF4BH2::on_uiaRow_triggered()
+{
+    ui->uitvMain->resizeRowsToContents();
+}
+
