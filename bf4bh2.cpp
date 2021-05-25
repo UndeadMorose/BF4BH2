@@ -97,18 +97,22 @@ int BF4BH2::getPlayers()
       QString content = reply2->readAll();
       int t1 = content.indexOf( "serverbrowserwarsaw.show.surface", content.indexOf( "Surface.globalContext")) + 45;
       content = content.mid( t1, content.indexOf( "block_serverbrowserwarsaw_warsawshow", t1) - t1 - 2);
+      //==== old
       QJsonDocument jsonDocument( QJsonDocument::fromJson( content.toUtf8()));
       QJsonObject jsObj = jsonDocument.object();
-      player = jsObj[ "players"].toArray().size();
+      player = content.count("onlineGame");
+//      player = jsObj[ "players"].toArray().size();
       if( player < 10) players = "0" + QString::number( player);
       else players = QString::number(player);
       QJsonObject jsServer = jsObj[ "server"].toObject();
       QJsonObject jsSlots = jsServer[ "slots"].toObject().value( "2").toObject();
+
       imodel->insertRow(i);
       imodel->setItem( i, 0, new  QStandardItem( jsServer[ "name"].toString().simplified()));
       imodel->setItem( i, 1, new  QStandardItem( dictionary(jsServer[ "map"].toString())));
-      imodel->setItem( i, 2, new  QStandardItem( dictionary2( dictionary2( QString::number( jsServer[ "preset"].toInt())))));
-      imodel->setItem( i, 3, new  QStandardItem( players + "/" + QString::number( jsSlots[ "max"].toInt())));
+      imodel->setItem( i, 2, new  QStandardItem( dictionary2( QString::number( jsServer[ "preset"].toInt()))));
+      imodel->setItem( i, 3, new  QStandardItem( players + "/" + QString::number(jsSlots[ "max"].toInt())));
+
       ui->uipb->setValue( i+1);
     }
     else
@@ -121,7 +125,7 @@ int BF4BH2::getPlayers()
 
 bool BF4BH2::ErrTyper( int error)
 {
-  switch ( error) {
+  switch ( error){
     case 1: return true;
       break;
     case 0:
@@ -161,16 +165,16 @@ QString BF4BH2::dictionary( QString tech_word)
 {
   QStringList maps
   {
-    "XP7_Valley",   //0 Долина Драконов 2015
-    "MP_Journey",   //1 Дорога Голмуд
-    "XP5_Night_01",	//2 Завод: Ночная Смена
-    "MP_Abandoned",	//3 Завод 311
-    "MP_Flooded",   //4 Зона Затопления
-    "MP_Tremors",   //5 Кровавая Заря
-    "MP_Resort",    //6 Курорт Хайнань
-    "XP6_CMP",      //7 Операция "Бунт"
-    "MP_Prison",    //8 Операция "Взаперти"
-    "MP_Siege",     //9 Осада Шанхая
+    "XP7_Valley",   // 0 Долина Драконов 2015
+    "MP_Journey",   // 1 Дорога Голмуд
+    "XP5_Night_01",	// 2 Завод: Ночная Смена
+    "MP_Abandoned",	// 3 Завод 311
+    "MP_Flooded",   // 4 Зона Затопления
+    "MP_Tremors",   // 5 Кровавая Заря
+    "MP_Resort",    // 6 Курорт Хайнань
+    "XP6_CMP",      // 7 Операция "Бунт"
+    "MP_Prison",    // 8 Операция "Взаперти"
+    "MP_Siege",     // 9 Осада Шанхая
     "MP_Damage",    //10 Плотина На Меконге
     "MP_TheDish",   //11 Чужой Сигнал
     "MP_Naval",     //12 Шторм На Параселах
@@ -199,39 +203,39 @@ QString BF4BH2::dictionary( QString tech_word)
   int dict = maps.indexOf(tech_word);
   switch(dict)
   {
-    case ( 0):	tech_word = "Долина Драконов 2015";     break;
-    case ( 1):	tech_word = "Дорога Голмуд";            break;
-    case ( 2):	tech_word = "Завод: Ночная Смена";      break;
-    case ( 3):	tech_word = "Завод 311";                break;
-    case ( 4):	tech_word = "Зона Затопления";          break;
-    case ( 5):	tech_word = "Кровавая Заря";            break;
-    case ( 6):	tech_word = "Курорт Хайнань";           break;
-    case ( 7):	tech_word = "Операция \"Бунт\"";        break;
-    case ( 8):	tech_word = "Операция \"Взаперти\"";    break;
-    case ( 9):	tech_word = "Осада Шанхая";             break;
-    case (10):	tech_word = "Плотина На Меконге";       break;
-    case (11):	tech_word = "Чужой Сигнал";             break;
-    case (12):	tech_word = "Шторм На Параселах";       break;
-    case (13):	tech_word = "Алтайский Хребет";         break;
-    case (14):	tech_word = "Гуйлиньский пики";         break;
-    case (15):	tech_word = "Перевал Дракона";          break;
-    case (16):	tech_word = "Шелковый путь";            break;
-    case (17):	tech_word = "Граница Каспии";           break;
-    case (18):	tech_word = "Оманский залив";           break;
-    case (19):	tech_word = "Операция \"Огненый шторм\"";	break;
-    case (20):	tech_word = "Операция \"Метро\"";       break;
-    case (21):	tech_word = "Волнорез";                 break;
-    case (22):	tech_word = "Затерянные острова";       break;
-    case (23):	tech_word = "Операция \"Мортира\"";     break;
-    case (24):	tech_word = "Удар по Спратли";          break;
-    case (25):	tech_word = "Жемчужный рынок";          break;
-    case (26):	tech_word = "Затонувций \"дракон\"";    break;
-    case (27):	tech_word = "Пропоганда";               break;
-    case (28):	tech_word = "Сад Лумфини";              break;
-    case (29):	tech_word = "Ангар 21";                 break;
-    case (30):	tech_word = "Карельские гиганты";       break;
-    case (31):	tech_word = "Молот";                    break;
-    case (32):	tech_word = "Операция \"Белая мгла\"";	break;
+    case ( 0):	tech_word = tr("Долина Драконов 2015");       break;
+    case ( 1):	tech_word = tr("Дорога Голмуд");              break;
+    case ( 2):	tech_word = tr("Завод: Ночная Смена");        break;
+    case ( 3):	tech_word = tr("Завод 311");                  break;
+    case ( 4):	tech_word = tr("Зона Затопления");            break;
+    case ( 5):	tech_word = tr("Кровавая Заря");              break;
+    case ( 6):	tech_word = tr("Курорт Хайнань");             break;
+    case ( 7):	tech_word = tr("Операция \"Бунт\"");          break;
+    case ( 8):	tech_word = tr("Операция \"Взаперти\"");      break;
+    case ( 9):	tech_word = tr("Осада Шанхая");               break;
+    case (10):	tech_word = tr("Плотина На Меконге");         break;
+    case (11):	tech_word = tr("Чужой Сигнал");               break;
+    case (12):	tech_word = tr("Шторм На Параселах");         break;
+    case (13):	tech_word = tr("Алтайский Хребет");           break;
+    case (14):	tech_word = tr("Гуйлиньский пики");           break;
+    case (15):	tech_word = tr("Перевал Дракона");            break;
+    case (16):	tech_word = tr("Шелковый путь");              break;
+    case (17):	tech_word = tr("Граница Каспии");             break;
+    case (18):	tech_word = tr("Оманский залив");             break;
+    case (19):	tech_word = tr("Операция \"Огненый шторм\"");	break;
+    case (20):	tech_word = tr("Операция \"Метро\"");         break;
+    case (21):	tech_word = tr("Волнорез");                   break;
+    case (22):	tech_word = tr("Затерянные острова");         break;
+    case (23):	tech_word = tr("Операция \"Мортира\"");       break;
+    case (24):	tech_word = tr("Удар по Спратли");            break;
+    case (25):	tech_word = tr("Жемчужный рынок");            break;
+    case (26):	tech_word = tr("Затонувций \"дракон\"");      break;
+    case (27):	tech_word = tr("Пропоганда");                 break;
+    case (28):	tech_word = tr("Сад Лумфини");                break;
+    case (29):	tech_word = tr("Ангар 21");                   break;
+    case (30):	tech_word = tr("Карельские гиганты");         break;
+    case (31):	tech_word = tr("Молот");                      break;
+    case (32):	tech_word = tr("Операция \"Белая мгла\"");    break;
     case (-1):  break;
   }
   return tech_word;
@@ -248,9 +252,9 @@ QString BF4BH2::dictionary2( QString tech_word)
   int dict = maps.indexOf(tech_word);
   switch(dict)
   {
-    case (00): tech_word = "Норм";     break;
-    case (01): tech_word = "Реал";     break;
-    case (02): tech_word = "Инди";     break;
+    case (00): tech_word = tr("Норм");     break;
+    case (01): tech_word = tr("Реал");     break;
+    case (02): tech_word = tr("Инди");     break;
 
     case (-1): break;
   }
@@ -260,13 +264,13 @@ QString BF4BH2::dictionary2( QString tech_word)
 //======================================
 void BF4BH2::on_uiaAbout_triggered()
 {
-  QMessageBox::about( this,
-                      "О программе",
-                      "Версия: " + tr(VER_FILEVERSION_STR) + "\n\n"
-                                            "Собрано на коленке.\n\n"
-                                            "GitHub: https://github.com/UndeadMorose/BF4BH2/\n\n"
-                                            "Программа предоставляется \"КАК ЕСТЬ\" БЕЗ ГАРАНТИИ ЛЮБОГО ВИДА, ВКЛЮЧАЯ ГАРАНТИИ КОНСТРУКЦИИ, ТОВАРНОГО РАЗВИТИЯ И ПРИГОДНОСТИ ДЛЯ ОСОБЫХ ЦЕЛЕЙ.\n\n"
-                                            "The program is provided AS IS with NO WARRANTY OF ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.");
+  QString sAbout = "\n\nСобрано на коленке.\n\n"
+           "GitHub: https://github.com/UndeadMorose/BF4BH2/\n\n"
+           "Программа предоставляется \"КАК ЕСТЬ\" БЕЗ ГАРАНТИИ ЛЮБОГО ВИДА, "
+           "ВКЛЮЧАЯ ГАРАНТИИ КОНСТРУКЦИИ, ТОВАРНОГО РАЗВИТИЯ И ПРИГОДНОСТИ ДЛЯ ОСОБЫХ ЦЕЛЕЙ.\n\n"
+           "The program is provided AS IS with NO WARRANTY OF ANY KIND, "
+           "INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.";
+  QMessageBox::about( this, "О программе","Версия: " + tr(VER_FILEVERSION_STR) + sAbout);
 }
 
 void BF4BH2::on_uiaQuit_triggered()
@@ -284,6 +288,6 @@ void BF4BH2::pbHider()
 
 void BF4BH2::on_uiaRow_triggered()
 {
-    ui->uitvMain->resizeRowsToContents();
+  ui->uitvMain->resizeRowsToContents();
 }
 

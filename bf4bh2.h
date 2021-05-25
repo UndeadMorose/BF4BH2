@@ -33,7 +33,6 @@ class BF4BH2 : public QMainWindow
     void actTriggered();
     void on_uiaAbout_triggered();
     void on_uiaQuit_triggered();
-
     void on_uiaRow_triggered();
 
   signals:
