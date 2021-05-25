@@ -1,11 +1,11 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 //////////////////////////////////////////////////////////////////////////
-#define VER_FILEVERSION             1,2,2,2
-#define VER_FILEVERSION_STR         "1.2.2.2\0"
+#define VER_FILEVERSION             1,3,0,0
+#define VER_FILEVERSION_STR         "1.3.0.0\0"
 
-#define VER_PRODUCTVERSION          1,2,2,2
-#define VER_PRODUCTVERSION_STR      "1.2.2\0"
+#define VER_PRODUCTVERSION          1,3,0,0
+#define VER_PRODUCTVERSION_STR      "1.3.0\0"
 
 #define VER_COMPANYNAME_STR         "UM"
 #define VER_FILEDESCRIPTION_STR     "BF4BH2"
