@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>711</width>
-    <height>396</height>
+    <width>796</width>
+    <height>616</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -20,7 +20,50 @@
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
     <item>
-     <widget class="QTableView" name="uitvMain"/>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <item>
+       <widget class="QLineEdit" name="uileSearch">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="statusTip">
+         <string/>
+        </property>
+        <property name="inputMask">
+         <string/>
+        </property>
+        <property name="text">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string>https://battlelog.battlefield.com/bf4/...</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="uibSearch">
+        <property name="enabled">
+         <bool>true</bool>
+        </property>
+        <property name="text">
+         <string>Поиск</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item>
+     <widget class="QTableView" name="uitvMain">
+      <property name="editTriggers">
+       <set>QAbstractItemView::NoEditTriggers</set>
+      </property>
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="sortingEnabled">
+       <bool>true</bool>
+      </property>
+     </widget>
     </item>
     <item>
      <widget class="QProgressBar" name="uipb">
@@ -99,17 +142,19 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>711</width>
+     <width>796</width>
      <height>20</height>
     </rect>
    </property>
-   <widget class="QMenu" name="uimFile">
+   <widget class="QMenu" name="uim0">
     <property name="title">
-     <string>Файл</string>
+     <string>Инструменты</string>
     </property>
-    <addaction name="uiaAbout"/>
+    <addaction name="action_URL"/>
+    <addaction name="uiaUpdate"/>
     <addaction name="uiaRow"/>
     <addaction name="separator"/>
+    <addaction name="uiaAbout"/>
     <addaction name="uiaQuit"/>
    </widget>
    <widget class="QMenu" name="uimPreset">
@@ -117,7 +162,7 @@
      <string>Предустановки</string>
     </property>
    </widget>
-   <addaction name="uimFile"/>
+   <addaction name="uim0"/>
    <addaction name="uimPreset"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -136,10 +181,29 @@
   </action>
   <action name="uiaRow">
    <property name="text">
-    <string>Подогнать строки</string>
+    <string>Подогнать строки по содержанию</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+R</string>
+   </property>
+  </action>
+  <action name="uiaUpdate">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Автообновление данных</string>
+   </property>
+  </action>
+  <action name="action_URL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Поиск по URL</string>
    </property>
   </action>
  </widget>
