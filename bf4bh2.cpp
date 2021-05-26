@@ -18,9 +18,13 @@ BF4BH2::BF4BH2( QWidget *parent)
   connect( ui->uipb, &QProgressBar::valueChanged, this, &BF4BH2::pbHider);
   ui->uipb->hide();
   autoUpdater = new QTimer;
+
   ui->uileSearch->setHidden(1);
   ui->uibSearch->setHidden(1);
   ui->statusbar->setStyleSheet("color: red");
+  proxyModel = new QSortFilterProxyModel();
+  proxyModel->setSourceModel(imodel);
+
 }
 
 BF4BH2::~BF4BH2()
@@ -31,25 +35,25 @@ BF4BH2::~BF4BH2()
 int BF4BH2::initMenu()
 {
   QStringList column;
-  column  << tr("Ссылка")
-          << tr( "Имя")
+  column  << tr( "Имя")
           << tr( "Карта")
           << tr( "Режим")
-          << tr( "*/*");
+          << tr( "*/*")
+          << tr("Ссылка");
   //  imodel->setColumnCount( column.size());// Указываем число колонок, ток нафиг?
   imodel->setHorizontalHeaderLabels( column);// задаем верхнюю легенду
-  ui->uitvMain->setModel( imodel);
-  ui->uitvMain->horizontalHeader()->setSectionResizeMode( 1, QHeaderView::Stretch);
-  //  ui->uitvMain->horizontalHeader()->setStretchLastSection(true);
-  ui->uitvMain->sortByColumn( 4, Qt::DescendingOrder);
+//  ui->uitvMain->setModel( imodel);
+  ui->uitvMain->setModel(proxyModel);
+  ui->uitvMain->horizontalHeader()->setSectionResizeMode( 0, QHeaderView::Stretch);
+  ui->uitvMain->setSelectionBehavior( QAbstractItemView::SelectRows);
+  ui->uitvMain->setColumnHidden(4, true);
+  ui->uitvMain->sortByColumn( 3, Qt::DescendingOrder);
   ui->uitvMain->resizeColumnsToContents();
   ui->uitvMain->resizeRowsToContents();
   ui->uitvMain->setSortingEnabled( true);
-  //  ui->uitvMain->setSelectionMode( QAbstractItemView::SingleSelection);
-  ui->uitvMain->setSelectionBehavior( QAbstractItemView::SelectRows);
-  ui->uitvMain->setColumnHidden(0, true);
   autoUpdater->stop();
-  autoUpdater->start(20000);
+  autoUpdater->start(60000);
+  ui->uileFilter->setText("");
   return 1;
 }
 
@@ -118,11 +122,11 @@ int BF4BH2::getPlayers()
       QJsonObject jsSlots = jsServer[ "slots"].toObject().value( "2").toObject();
 
       imodel->insertRow(i);
-      imodel->setItem( i, 1, new  QStandardItem( jsServer[ "name"].toString().simplified()));
-      imodel->setItem( i, 2, new  QStandardItem( dictionary(jsServer[ "map"].toString())));
-      imodel->setItem( i, 3, new  QStandardItem( dictionary2( QString::number( jsServer[ "preset"].toInt()))));
-      imodel->setItem( i, 4, new  QStandardItem( players + "/" + QString::number(jsSlots[ "max"].toInt())));
-      imodel->setItem( i, 0, new  QStandardItem(servers[i]));
+      imodel->setItem( i, 0, new  QStandardItem( jsServer[ "name"].toString().simplified()));
+      imodel->setItem( i, 1, new  QStandardItem( dictionary(jsServer[ "map"].toString())));
+      imodel->setItem( i, 2, new  QStandardItem( dictionary2( QString::number( jsServer[ "preset"].toInt()))));
+      imodel->setItem( i, 3, new  QStandardItem( players + "/" + QString::number(jsSlots[ "max"].toInt())));
+      imodel->setItem( i, 4, new  QStandardItem(servers[i]));
 
       ui->uipb->setValue( i+1);
     }
@@ -351,5 +355,15 @@ void BF4BH2::on_uibSearch_clicked()
     statusBar()->showMessage("Incorrect URL", 6000);
 
   }
+}
+
+
+void BF4BH2::on_uileFilter_textChanged(const QString &arg1)
+{
+
+  QRegExp::PatternSyntax syntax = QRegExp::PatternSyntax(QRegExp::FixedString);
+  QRegExp regExp(arg1,Qt::CaseInsensitive,syntax);
+  proxyModel->setFilterKeyColumn(0); //Устанавливаем колонку фильтрации
+  proxyModel->setFilterRegExp(regExp);
 }
 

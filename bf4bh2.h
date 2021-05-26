@@ -13,6 +13,7 @@
 #include <QStandardItemModel>
 #include <QMap>
 #include <QTimer>
+#include <QSortFilterProxyModel>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class BF4BH2; }
@@ -37,12 +38,10 @@ class BF4BH2 : public QMainWindow
     void on_uiaRow_triggered();
     void timeOut();
     void on_uitvMain_doubleClicked(const QModelIndex &index);
-
     void on_uiaUpdate_triggered(bool checked);
-
     void on_action_URL_triggered(bool checked);
-
     void on_uibSearch_clicked();
+    void on_uileFilter_textChanged(const QString &arg1);
 
   signals:
     void replyfin();
@@ -58,6 +57,7 @@ class BF4BH2 : public QMainWindow
     bool ErrTyper(int);
     int initMenu();
 
+    QSortFilterProxyModel *proxyModel;
     QStandardItemModel *imodel;
     QNetworkAccessManager* manager;
     QNetworkAccessManager* manager2;
