@@ -44,10 +44,10 @@ int BF4BH2::initMenu()
   imodel->setHorizontalHeaderLabels( column);// задаем верхнюю легенду
 //  ui->uitvMain->setModel( imodel);
   ui->uitvMain->setModel(proxyModel);
-  ui->uitvMain->horizontalHeader()->setSectionResizeMode( 0, QHeaderView::Stretch);
+  ui->uitvMain->horizontalHeader()->setSectionResizeMode( C_NAME, QHeaderView::Stretch);
   ui->uitvMain->setSelectionBehavior( QAbstractItemView::SelectRows);
-  ui->uitvMain->setColumnHidden(4, true);
-  ui->uitvMain->sortByColumn( 3, Qt::DescendingOrder);
+  ui->uitvMain->setColumnHidden(C_LINK, true);
+  ui->uitvMain->sortByColumn( C_BOT, Qt::DescendingOrder);
   ui->uitvMain->resizeColumnsToContents();
   ui->uitvMain->resizeRowsToContents();
   ui->uitvMain->setSortingEnabled( true);
@@ -122,11 +122,11 @@ int BF4BH2::getPlayers()
       QJsonObject jsSlots = jsServer[ "slots"].toObject().value( "2").toObject();
 
       imodel->insertRow(i);
-      imodel->setItem( i, 0, new  QStandardItem( jsServer[ "name"].toString().simplified()));
-      imodel->setItem( i, 1, new  QStandardItem( dictionary(jsServer[ "map"].toString())));
-      imodel->setItem( i, 2, new  QStandardItem( dictionary2( QString::number( jsServer[ "preset"].toInt()))));
-      imodel->setItem( i, 3, new  QStandardItem( players + "/" + QString::number(jsSlots[ "max"].toInt())));
-      imodel->setItem( i, 4, new  QStandardItem(servers[i]));
+      imodel->setItem( i, C_NAME, new  QStandardItem( jsServer[ "name"].toString().simplified()));
+      imodel->setItem( i, C_MAP, new  QStandardItem( dictionary(jsServer[ "map"].toString())));
+      imodel->setItem( i, C_PRESET, new  QStandardItem( dictionary2( QString::number( jsServer[ "preset"].toInt()))));
+      imodel->setItem( i, C_BOT, new  QStandardItem( players + "/" + QString::number(jsSlots[ "max"].toInt())));
+      imodel->setItem( i, C_LINK, new  QStandardItem(servers[i]));
 
       ui->uipb->setValue( i+1);
     }
@@ -148,22 +148,22 @@ bool BF4BH2::ErrTyper( int error)
   }
 }
 
-void BF4BH2::setAction(QString name, QString value, int button)
+void BF4BH2::setAction(QString nameAct, QString value, int button)
 {
-  actionList[name] = value;
-  QAction *action   = new QAction(name, this);
-  action->setObjectName(name);
+  actionList[nameAct] = value;
+  QAction *action   = new QAction(nameAct, this);
+  action->setObjectName(nameAct);
   connect(action, &QAction::triggered, this, &BF4BH2::actTriggered);
   ui->uimPreset->addAction(action);
   if(button == 0)
   {
     connect(ui->uib0, &QPushButton::clicked, action, &QAction::triggered);
-    ui->uib0->setText(name);
+    ui->uib0->setText(nameAct);
   }
   else if(button == 1)
   {
     connect(ui->uib1, &QPushButton::clicked, action, &QAction::triggered);
-    ui->uib1->setText(name);
+    ui->uib1->setText(nameAct);
   }
 }
 
@@ -315,7 +315,7 @@ void BF4BH2::on_uiaRow_triggered()
 
 void BF4BH2::on_uitvMain_doubleClicked(const QModelIndex &index)
 {
-  QDesktopServices::openUrl(QUrl(imodel->data(imodel->index(index.row(), 0)).toString()));
+  QDesktopServices::openUrl(QUrl(imodel->data(imodel->index(index.row(), C_LINK)).toString()));
 }
 
 

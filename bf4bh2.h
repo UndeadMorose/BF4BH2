@@ -15,6 +15,12 @@
 #include <QTimer>
 #include <QSortFilterProxyModel>
 
+#define C_NAME    0
+#define C_MAP     1
+#define C_PRESET  2
+#define C_BOT     3
+#define C_LINK    4
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class BF4BH2; }
 QT_END_NAMESPACE
