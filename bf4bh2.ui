@@ -54,11 +54,23 @@
     </item>
     <item>
      <widget class="QTableView" name="uitvMain">
+      <property name="toolTip">
+       <string>Для редактирования предустановок используйте файл presets.json</string>
+      </property>
+      <property name="sizeAdjustPolicy">
+       <enum>QAbstractScrollArea::AdjustToContents</enum>
+      </property>
       <property name="editTriggers">
        <set>QAbstractItemView::NoEditTriggers</set>
       </property>
       <property name="alternatingRowColors">
        <bool>true</bool>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectRows</enum>
+      </property>
+      <property name="gridStyle">
+       <enum>Qt::SolidLine</enum>
       </property>
       <property name="sortingEnabled">
        <bool>true</bool>
@@ -82,11 +94,20 @@
       <property name="enabled">
        <bool>true</bool>
       </property>
+      <property name="toolTip">
+       <string/>
+      </property>
       <property name="value">
        <number>0</number>
       </property>
       <property name="textVisible">
        <bool>true</bool>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+      <property name="textDirection">
+       <enum>QProgressBar::TopToBottom</enum>
       </property>
      </widget>
     </item>

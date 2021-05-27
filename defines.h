@@ -1,8 +1,8 @@
 #ifndef DEFINES_H
 #define DEFINES_H
 //////////////////////////////////////////////////////////////////////////
-#define VER_FILEVERSION             1,3,5,2
-#define VER_FILEVERSION_STR         "1.3.5.2\0"
+#define VER_FILEVERSION             1,3,5,3
+#define VER_FILEVERSION_STR         "1.3.5.3\0"
 
 #define VER_PRODUCTVERSION          1,3,5,0
 #define VER_PRODUCTVERSION_STR      "1.3.5\0"
