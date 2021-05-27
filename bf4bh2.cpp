@@ -45,6 +45,7 @@ int BF4BH2::initMenu()
 //  ui->uitvMain->setModel( imodel);
   ui->uitvMain->setModel(proxyModel);
   ui->uitvMain->horizontalHeader()->setSectionResizeMode( C_NAME, QHeaderView::Stretch);
+//  ui->uitvMain->horizontalHeader()->setStretchLastSection(1);
   ui->uitvMain->setSelectionBehavior( QAbstractItemView::SelectRows);
   ui->uitvMain->setColumnHidden(C_LINK, true);
   ui->uitvMain->sortByColumn( C_BOT, Qt::DescendingOrder);
@@ -315,7 +316,7 @@ void BF4BH2::on_uiaRow_triggered()
 
 void BF4BH2::on_uitvMain_doubleClicked(const QModelIndex &index)
 {
-  QDesktopServices::openUrl(QUrl(imodel->data(imodel->index(index.row(), C_LINK)).toString()));
+  QDesktopServices::openUrl(QUrl(proxyModel->data(proxyModel->index(index.row(), C_LINK)).toString()));
 }
 
 
